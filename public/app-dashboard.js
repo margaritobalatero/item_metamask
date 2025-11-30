@@ -1,7 +1,18 @@
 // === CRUD Operations ===
-async function loadItems() {
+async function loadItems(filterText = "") {
   const res = await fetch("/api/items", { credentials: "include" });
-  const items = await res.json();
+  let items = await res.json();
+
+  // 🔍 Filter items (case insensitive)
+  if (filterText.trim() !== "") {
+    const search = filterText.toLowerCase();
+
+    items = items.filter(i =>
+      i.item.toLowerCase().includes(search) ||
+      (i.description && i.description.toLowerCase().includes(search))
+    );
+  }
+
   const tbody = document.getElementById("items");
   tbody.innerHTML = "";
 
@@ -23,6 +34,7 @@ async function loadItems() {
     tbody.appendChild(row);
   });
 }
+
 
 async function addItem(e) {
   e.preventDefault();
@@ -138,6 +150,15 @@ fields.forEach(name => {
     });
   }
 });
+
+const searchInput = document.getElementById("searchInput");
+
+if (searchInput) {
+  searchInput.addEventListener("input", () => {
+    loadItems(searchInput.value);
+  });
+}
+
 
 const saveBtn = document.createElement("button");
 saveBtn.type = "submit";
